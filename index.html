@@ -156,10 +156,11 @@ input[type=range].evocative::-moz-range-thumb{width:22px;height:22px;border-radi
 /* RESULTS */
 .results-hero{background:var(--acc-bg);border-radius:var(--rad);padding:1.1rem 1.4rem;margin-bottom:1.4rem}
 .results-hero p{font-size:14px;color:var(--acc);line-height:1.65}
-.bar-row{margin-bottom:.9rem}
+.bar-row{margin-bottom:1.25rem}
 .bar-meta{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}
 .bar-name{font-size:13px;font-weight:500}
 .bar-lbl{font-size:11px;color:var(--muted);font-style:italic}
+.bar-desc{font-size:12px;color:var(--muted);line-height:1.5;font-weight:300;margin-bottom:6px}
 .bar-bg{height:5px;background:var(--border);border-radius:3px;overflow:hidden}
 .bar-fg{height:100%;border-radius:3px;transition:width 1s ease .15s}
 .bar-hi{background:#2E5FA3}
@@ -199,7 +200,7 @@ input[type=range].evocative::-moz-range-thumb{width:22px;height:22px;border-radi
 .map-legend{display:flex;gap:1.25rem;margin-bottom:1.5rem;flex-wrap:wrap}
 .legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
 .legend-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
-.map-row{margin-bottom:1.25rem}
+.map-row{margin-bottom:1.5rem}
 .map-row-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;flex-wrap:wrap;gap:4px}
 .map-mname{font-size:13px;font-weight:500}
 .zone-badge{font-size:11px;font-weight:500;padding:2px 9px;border-radius:10px}
@@ -208,8 +209,8 @@ input[type=range].evocative::-moz-range-thumb{width:22px;height:22px;border-radi
 .z-convo{background:#FEF0EE;color:var(--red)}
 .dual-wrap{position:relative;height:26px}
 .dual-bg{position:absolute;top:50%;transform:translateY(-50%);left:0;right:0;height:4px;background:var(--border);border-radius:2px}
-.dual-a{position:absolute;top:2px;height:9px;border-radius:2px;background:#2E5FA3;opacity:.85;transition:width 1s ease .2s}
-.dual-b{position:absolute;bottom:2px;height:9px;border-radius:2px;background:#C4713A;opacity:.85;transition:width 1s ease .3s}
+.dual-a{position:absolute;top:2px;left:0;height:9px;border-radius:2px;background:#2E5FA3;opacity:.85;transition:width 1s ease .2s}
+.dual-b{position:absolute;bottom:2px;left:0;height:9px;border-radius:2px;background:#C4713A;opacity:.85;transition:width 1s ease .3s}
 .dual-lbls{display:flex;justify-content:space-between;margin-top:3px}
 .dual-lbl{font-size:10px;color:var(--hint);font-style:italic}
 .zone-sec{margin-bottom:1.75rem}
@@ -470,7 +471,14 @@ var QS=[
   {tag:"Sea-Saw Balance",mindset:"seasaw",q:function(n){return"Overall, does your Sea-Saw feel balanced? Are both of you lifting and being lifted?"},hint:"Mutual cyclical growth (Rusbult, Reis and Kumashiro, 2009): balance is the engine, not a nice-to-have.",labels:["I'm doing most of the lifting","It's tilted, noticeably","Roughly equal, most days","Pretty well balanced","We lift each other naturally"]}
 ];
 
-var MINDSETS={curiosity:{label:"Radical Curiosity",qs:[0]},sharing:{label:"Sharing and Vulnerability",qs:[1,3]},listening:{label:"Listening Responsively",qs:[2,6]},michelangelo:{label:"Michelangelo Affirmation",qs:[4,5]},multiplicity:{label:"Multiplicity",qs:[7]},seasaw:{label:"Sea-Saw Balance",qs:[8,9]}};
+var MINDSETS={
+  curiosity:{label:"Radical Curiosity",qs:[0],desc:"How genuinely you pursue understanding of their inner world — their fears, dreams, and unspoken thoughts."},
+  sharing:{label:"Sharing and Vulnerability",qs:[1,3],desc:"How much of your true self you allow to be seen — not just the polished surface, but what lives below the waterline."},
+  listening:{label:"Listening Responsively",qs:[2,6],desc:"Whether your presence in conversation creates safety and openness, or closes something down."},
+  michelangelo:{label:"Michelangelo Affirmation",qs:[4,5],desc:"How much you see and celebrate who they are becoming — and whether the relationship moves you toward your own ideal self."},
+  multiplicity:{label:"Multiplicity",qs:[7],desc:"Whether you hold each other as full, complex people — contradictions included — rather than reducing one another to a single story."},
+  seasaw:{label:"Sea-Saw Balance",qs:[8,9],desc:"The overall reciprocity of your relationship — whether both of you are lifting and being lifted in turn."}
+};
 
 var INTERVENTIONS={
   curiosity:{action:function(n){return"Before your next conversation with "+n+", write down one thing about their inner world you've always assumed but never asked. Ask it tonight."},sci:"Huang et al. (2017): people who ask more questions, especially follow-ups, are rated as significantly more caring."},
@@ -647,9 +655,8 @@ async function showSolo(scores,pname,code){
   var bEl=document.getElementById('solo-bars');bEl.innerHTML='';
   Object.keys(MINDSETS).forEach(function(key){
     var sc=getMScore(scores,key);var cls=sc>=65?'bar-hi':sc>=40?'bar-md':'bar-lo';
-    var lq=MINDSETS[key].qs[MINDSETS[key].qs.length-1];var lbl=QS[lq].labels[scores[lq]];
     var d=document.createElement('div');d.className='bar-row';
-    d.innerHTML='<div class="bar-meta"><span class="bar-name">'+MINDSETS[key].label+'</span><span class="bar-lbl">'+lbl+'</span></div><div class="bar-bg"><div class="bar-fg '+cls+'" style="width:0%" data-w="'+sc+'%"></div></div>';
+    d.innerHTML='<div class="bar-meta"><span class="bar-name">'+MINDSETS[key].label+'</span><span class="bar-lbl">'+sc+'%</span></div><div class="bar-desc">'+MINDSETS[key].desc+'</div><div class="bar-bg"><div class="bar-fg '+cls+'" style="width:0%" data-w="'+sc+'%"></div></div>';
     bEl.appendChild(d);
   });
   var sorted=Object.keys(MINDSETS).sort(function(a,b){return getMScore(scores,a)-getMScore(scores,b);});
@@ -703,9 +710,8 @@ function buildMap(nA,nB,sA,sB,myS,myN){
   var mBars=document.getElementById('map-solo-bars');mBars.innerHTML='';
   Object.keys(MINDSETS).forEach(function(key){
     var sc=getMScore(myS,key);var cls=sc>=65?'bar-hi':sc>=40?'bar-md':'bar-lo';
-    var lq=MINDSETS[key].qs[MINDSETS[key].qs.length-1];var lbl=QS[lq].labels[myS[lq]];
     var d=document.createElement('div');d.className='bar-row';
-    d.innerHTML='<div class="bar-meta"><span class="bar-name">'+MINDSETS[key].label+'</span><span class="bar-lbl">'+lbl+'</span></div><div class="bar-bg"><div class="bar-fg '+cls+'" style="width:0%" data-w="'+sc+'%"></div></div>';
+    d.innerHTML='<div class="bar-meta"><span class="bar-name">'+MINDSETS[key].label+'</span><span class="bar-lbl">'+sc+'%</span></div><div class="bar-desc">'+MINDSETS[key].desc+'</div><div class="bar-bg"><div class="bar-fg '+cls+'" style="width:0%" data-w="'+sc+'%"></div></div>';
     mBars.appendChild(d);
   });
   var sortedMy=Object.keys(MINDSETS).sort(function(a,b){return getMScore(myS,a)-getMScore(myS,b);});
@@ -722,10 +728,8 @@ function buildMap(nA,nB,sA,sB,myS,myN){
     var zone=diff<=15?'sync':diff<=35?'gap':'convo';
     var zl=zone==='sync'?'In sync':zone==='gap'?'Interesting gap':'Worth a conversation';
     gaps.push({key:key,diff:diff,zone:zone,sa:sa,sb:sb});
-    var lq=MINDSETS[key].qs[MINDSETS[key].qs.length-1];
-    var lA=QS[lq].labels[sA[lq]];var lB=QS[lq].labels[sB[lq]];
     var d=document.createElement('div');d.className='map-row';
-    d.innerHTML='<div class="map-row-header"><span class="map-mname">'+MINDSETS[key].label+'</span><span class="zone-badge z-'+zone+'">'+zl+'</span></div><div class="dual-wrap"><div class="dual-bg"></div><div class="dual-a" style="width:0%" data-w="'+sa+'%"></div><div class="dual-b" style="width:0%" data-w="'+sb+'%"></div></div><div class="dual-lbls"><span class="dual-lbl">'+nA+': '+lA+'</span><span class="dual-lbl">'+nB+': '+lB+'</span></div>';
+    d.innerHTML='<div class="map-row-header"><span class="map-mname">'+MINDSETS[key].label+'</span><span class="zone-badge z-'+zone+'">'+zl+'</span></div><div class="bar-desc">'+MINDSETS[key].desc+'</div><div class="dual-wrap"><div class="dual-bg"></div><div class="dual-a" style="width:0%" data-w="'+sa+'%"></div><div class="dual-b" style="width:0%" data-w="'+sb+'%"></div></div><div class="dual-lbls"><span class="dual-lbl">'+nA+': '+sa+'%</span><span class="dual-lbl">'+nB+': '+sb+'%</span></div>';
     barsEl.appendChild(d);
   });
   var syncI=gaps.filter(function(g){return g.zone==='sync';});
