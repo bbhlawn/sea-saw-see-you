@@ -43,8 +43,8 @@ body{font-family:var(--sans);color:var(--ink);background:#FDFCFA;min-height:100v
 @keyframes beamRock{0%,100%{transform:rotate(-14deg)}50%{transform:rotate(14deg)}}
 .splash-pivot{position:absolute;bottom:28px;left:50%;transform:translateX(-50%);width:8px;height:18px;background:#1A1812;border-radius:2px}
 .splash-base{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);width:28px;height:6px;background:#1A1812;border-radius:3px}
-.splash-fig-a{position:absolute;bottom:52px;left:10px;animation:figA 2.4s ease-in-out infinite}
-.splash-fig-b{position:absolute;bottom:52px;right:10px;animation:figB 2.4s ease-in-out infinite}
+.splash-fig-a{position:absolute;bottom:52px;left:24px;animation:figA 2.4s ease-in-out infinite}
+.splash-fig-b{position:absolute;bottom:52px;right:24px;animation:figB 2.4s ease-in-out infinite}
 @keyframes figA{0%,100%{transform:translateY(20px)}50%{transform:translateY(-20px)}}
 @keyframes figB{0%,100%{transform:translateY(-20px)}50%{transform:translateY(20px)}}
 .fig{display:flex;flex-direction:column;align-items:center;gap:3px}
@@ -56,6 +56,7 @@ body{font-family:var(--sans);color:var(--ink);background:#FDFCFA;min-height:100v
 .splash-title em{font-style:italic;color:#2E5FA3}
 .splash-sub{font-size:14px;color:#7A7468;text-align:center;font-weight:300;opacity:0;animation:fadeIn 1s ease 2.5s forwards}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.splash-cta{margin-top:2rem;opacity:0;animation:fadeIn .6s ease 3s forwards;padding:14px 36px;font-size:15px;letter-spacing:.02em}
 
 /* APP BAR */
 .app-bar{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem .75rem;border-bottom:.5px solid var(--border);margin-bottom:1.75rem;position:sticky;top:0;background:#FDFCFA;z-index:10}
@@ -239,11 +240,12 @@ input[type=range].evocative::-moz-range-thumb{width:22px;height:22px;border-radi
     <div class="splash-beam"></div>
     <div class="splash-pivot"></div>
     <div class="splash-base"></div>
-    <div class="splash-fig-a fig"><div class="fig-head"></div><div class="fig-body"></div></div>
+    <div class="splash-fig-a fig fig-a"><div class="fig-head"></div><div class="fig-body"></div></div>
     <div class="splash-fig-b fig fig-b"><div class="fig-head"></div><div class="fig-body"></div></div>
   </div>
   <div class="splash-title">Sea Saw,<br><em>See You</em></div>
   <p class="splash-sub">A reflection app for your closest relationships</p>
+  <button class="btn btn-dark splash-cta" onclick="go('s-auth')">Get started →</button>
 </div>
 
 <!-- AUTH -->
@@ -765,7 +767,6 @@ function switchResult(tab){
 
 function copyCode(code){if(navigator.clipboard)navigator.clipboard.writeText(code).catch(function(){});var btns=document.querySelectorAll('.copy-btn');btns.forEach(function(b){b.textContent='Copied!';setTimeout(function(){b.textContent='Copy code';},2000);});}
 
-setTimeout(function(){go('s-auth');},5000);
 </script>
 </body>
 </html>
