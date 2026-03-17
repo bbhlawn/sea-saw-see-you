@@ -63,8 +63,14 @@ body{font-family:var(--sans);color:var(--ink);background:#FDFCFA;min-height:100v
 .app-bar{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem .75rem;border-bottom:.5px solid var(--border);margin-bottom:1.75rem;position:sticky;top:0;background:#FDFCFA;z-index:10}
 .app-bar-logo{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--hint);text-decoration:none}
 .avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;flex-shrink:0;background:#E8EFF9;color:#2E5FA3}
-.app-bar-user{display:flex;align-items:center;gap:8px;cursor:pointer}
+.app-bar-user{display:flex;align-items:center;gap:8px;cursor:pointer;position:relative}
 .avatar-name{font-size:13px;font-weight:500}
+.user-menu{display:none;position:absolute;top:calc(100% + 6px);right:0;background:var(--surf);border:.5px solid var(--border);border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.08);min-width:160px;z-index:20;overflow:hidden}
+.user-menu.open{display:block;animation:fadeUp .2s ease}
+.user-menu-item{display:flex;align-items:center;gap:8px;width:100%;padding:10px 14px;border:none;background:none;font-family:var(--sans);font-size:13px;color:var(--ink);cursor:pointer;transition:background .15s}
+.user-menu-item:hover{background:var(--surf2)}
+.user-menu-item.danger{color:var(--red)}
+.user-menu-item.danger:hover{background:#FEF0EE}
 
 .pad{padding:0 1.25rem}
 
@@ -283,9 +289,13 @@ input[type=range].evocative::-moz-range-thumb{width:22px;height:22px;border-radi
       <svg width="22" height="13" viewBox="0 0 22 13" fill="none"><rect x="0" y="8" width="22" height="1.5" rx=".75" fill="#A8A49E"/><rect x="10" y="8" width="2" height="5" rx="1" fill="#A8A49E"/><rect x="1" y="4" width="5" height="5" rx="1.2" stroke="#2E5FA3" stroke-width="1.1"/><rect x="16" y="1" width="5" height="5" rx="1.2" stroke="#C4713A" stroke-width="1.1"/></svg>
       Sea Saw
     </div>
-    <div class="app-bar-user">
+    <div class="app-bar-user" onclick="toggleUserMenu(event)">
       <div class="avatar" id="home-avatar">?</div>
       <span class="avatar-name" id="home-uname"></span>
+      <div class="user-menu" id="user-menu">
+        <button class="user-menu-item" onclick="go('s-home')">My reflections</button>
+        <button class="user-menu-item danger" onclick="logOut()">Sign out</button>
+      </div>
     </div>
   </div>
   <div class="pad">
@@ -539,7 +549,36 @@ function enterHome(){
   document.getElementById('home-avatar').textContent=ME.name[0].toUpperCase();
   document.getElementById('home-uname').textContent=ME.name;
   document.getElementById('home-greet').textContent='Good to see you, '+ME.name+'.';
+  dedupeRefs();
   renderRefs();go('s-home');
+}
+
+function toggleUserMenu(e){
+  e.stopPropagation();
+  var m=document.getElementById('user-menu');
+  m.classList.toggle('open');
+}
+document.addEventListener('click',function(){
+  var m=document.getElementById('user-menu');
+  if(m)m.classList.remove('open');
+});
+
+function logOut(){
+  ME={name:'',pin:'',reflections:[]};
+  var m=document.getElementById('user-menu');
+  if(m)m.classList.remove('open');
+  go('s-auth');
+}
+
+function dedupeRefs(){
+  var seen={};var unique=[];
+  for(var i=ME.reflections.length-1;i>=0;i--){
+    var r=ME.reflections[i];
+    var key=r.pName.toLowerCase()+'|'+r.relType;
+    if(!seen[key]){seen[key]=true;unique.unshift(r);}
+  }
+  ME.reflections=unique;
+  if(DB.users[ME.name]){DB.users[ME.name].reflections=unique;saveDB();}
 }
 
 async function renderRefs(){
@@ -625,25 +664,36 @@ function genCode(scores,seed){
 
 function getMScore(scores,key){var qs=MINDSETS[key].qs;var t=0;qs.forEach(function(i){t+=scores[i];});return Math.round((t/(qs.length*4))*100);}
 
+function upsertRef(ref){
+  var key=ref.pName.toLowerCase()+'|'+ref.relType;
+  var found=false;
+  for(var i=0;i<ME.reflections.length;i++){
+    var r=ME.reflections[i];
+    if(r.pName.toLowerCase()+'|'+r.relType===key){
+      ME.reflections[i]=ref;found=true;break;
+    }
+  }
+  if(!found)ME.reflections.push(ref);
+  if(!DB.users[ME.name])DB.users[ME.name]={pin:ME.pin,reflections:[]};
+  DB.users[ME.name].reflections=ME.reflections;
+  saveDB();
+}
+
 async function finishDiag(){
   if(!CUR.isJoining){
     var code=genCode(CUR.scores,ME.name+CUR.pName+Date.now());
     CUR.sessionCode=code;
     await storeSession(code,{scores:CUR.scores,myName:ME.name,theirName:CUR.pName,relType:CUR.relType});
     var ref={pName:CUR.pName,relType:CUR.relType,scores:CUR.scores,sessionCode:code,date:new Date().toLocaleDateString()};
-    ME.reflections.push(ref);
-    if(!DB.users[ME.name])DB.users[ME.name]={pin:ME.pin,reflections:[]};
-    DB.users[ME.name].reflections=ME.reflections;
-    saveDB();renderRefs();
+    upsertRef(ref);
+    renderRefs();
     showSolo(CUR.scores,CUR.pName,code);
   } else {
     var dataA=CUR.joinedData;
     await storeBSession(CUR.sessionCode,{scores:CUR.scores,name:ME.name});
     var ref={pName:dataA.myName,relType:CUR.relType,scores:CUR.scores,sessionCode:CUR.sessionCode,isJoiner:true,date:new Date().toLocaleDateString()};
-    ME.reflections.push(ref);
-    if(!DB.users[ME.name])DB.users[ME.name]={pin:ME.pin,reflections:[]};
-    DB.users[ME.name].reflections=ME.reflections;
-    saveDB();renderRefs();
+    upsertRef(ref);
+    renderRefs();
     showSolo(CUR.scores,dataA.myName,CUR.sessionCode);
   }
 }
